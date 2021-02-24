@@ -19,7 +19,11 @@ module.exports = app => {
         if (valueA !== valueB) throw msg;
     }
 
+    function lesOrError(value, msg) {
+        if (value.length > 255) throw msg;
+    }
 
 
-    return { existsOrError, notExistsOrError, equalsOrError };
+
+    return { existsOrError, notExistsOrError, equalsOrError, lesOrError };
 }

@@ -82,7 +82,7 @@ module.exports = app => {
 
     const getById = (req, res) => {
         app.db('categories')
-            .where({ id: res.params.id })
+            .where({ id: req.params.id })
             .first()
             .then(categorie => res.json(categorie))
             .catch(err => res.status(500).send(err));

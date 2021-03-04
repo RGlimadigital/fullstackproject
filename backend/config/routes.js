@@ -32,4 +32,8 @@ module.exports = app => {
         .delete(app.api.article.remove)
 
 
+    app.route('/categories/:id/articles')
+        .get(app.api.article.getByCategory)
+
+
 };

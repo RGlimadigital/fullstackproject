@@ -1,3 +1,5 @@
+const queries = require('./queries');
+
 module.exports = app => {
     const { existsOrError, notExistsOrError, lesOrError } = app.api.validation;
 
@@ -58,7 +60,7 @@ module.exports = app => {
         const count = parseInt(result.count);
 
         app.db('articles')
-            .select('id', 'name', 'description')
+            .select('id', 'name', 'description', 'userId')
             .limit(limit).offset(page * limit - limit)
             .then(articles => res.json({ data: articles, count, limit }))
             .catch(err => res.status(500).send(err));
@@ -73,8 +75,25 @@ module.exports = app => {
                 article.content = article.content.toString();
                 return res.json(article);
             })
-            .catch(err => res.status(500).send(err))
+            .catch(err => res.status(500).send(err));
     };
 
-    return { save, remove, get, getById };
+    const getByCategory = async(req, res) => {
+        const categoryId = req.params.id;
+        const page = req.query.page || 1;
+        const categories = await app.db.raw(queries.categoryWithChildren, categoryId);
+        const ids = categories.rows.map(c => c.id);
+        console.log(ids);
+
+        app.db({ a: 'articles', u: 'users' })
+            .select('a.id', 'a.name', 'a.description', 'a.userId', 'a.imageUrl', { Author: 'u.name' })
+            .limit(limit).offset(page * limit - limit)
+            .whereRaw('?? = ??', ['u.id', 'a.userId'])
+            .whereIn('categoryId', ids)
+            .orderBy('a.id', 'desc')
+            .then(articles => res.json(articles))
+            .catch(err => res.status(500).send(err))
+    }
+
+    return { save, remove, get, getById, getByCategory };
 };
